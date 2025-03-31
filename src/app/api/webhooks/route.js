@@ -1,5 +1,6 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
+import { createOrUpdateUser } from "@/lib/mongodb/actions/user";
 // import { WebhookEvent } from "@clerk/nextjs/server";
 
 export async function POST(req) {
@@ -49,17 +50,44 @@ export async function POST(req) {
 
   // Do something with payload
   // For this guide, log payload to console
-  const { id } = evt.data;
+  const { id } = evt?.data;
   const eventType = evt.type;
   console.log(`Received webhook with ID ${id} and event type of ${eventType}`);
   console.log("Webhook payload:", body);
 
-  if (eventType === "user.created") {
+  if (eventType === "user.created" || eventType === "user.updated") {
     console.log("user created");
+    const { id, first_name, last_name, image_url, email_addresses, username } =
+      evt?.data;
+    try {
+      await createOrUpdateUser(
+        id,
+        first_name,
+        last_name,
+        image_url,
+        email_addresses,
+        username
+      );
+      return new Response("User is created or updated", { status: 200 });
+    } catch (error) {
+      console.log("error creating or updating user:", error);
+      return new Response("Error occured", {
+        status: 400,
+      });
+    }
   }
-  if (eventType === "user.updated") {
-    console.log("user updated");
+  if (eventType === "user.deleted") {
+    const { id } = evt?.data;
+    try {
+      await deleteUser(id);
+      return new Response("User is deleted", { status: 200 });
+    } catch (error) {
+      console.log("error deleting user:", error);
+      return new Response("Error occured", {
+        status: 400,
+      });
+    }
   }
 
-  return new Response("Webhook received", { status: 200 });
+  return new Response("", { status: 200 });
 }
