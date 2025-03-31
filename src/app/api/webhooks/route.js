@@ -79,6 +79,7 @@ export async function POST(req) {
   if (eventType === "user.deleted") {
     const { id } = evt?.data;
     try {
+      console.log("deleteUser user:");
       await deleteUser(id);
       return new Response("User is deleted", { status: 200 });
     } catch (error) {
