@@ -5,7 +5,7 @@ const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET; // Clerk 대시보드�
 
 export async function POST(req) {
   const payload = await req.text(); // raw body
-  const headerPayload = headers();
+  const headerPayload = await headers();
 
   const svixHeaders = {
     "svix-id": headerPayload.get("svix-id"),
