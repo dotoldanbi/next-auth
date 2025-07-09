@@ -4,8 +4,17 @@ import { Webhook } from "svix";
 const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET; // Clerk 대시보드에서 확인
 
 export async function POST(req) {
-  const payload = await req.text(); // raw body
+  const payload = await req.json(); // raw body
+  const body = JSON.stringify(payload); // JSON으로 변환
   const headerPayload = await headers();
+
+  const svixId = headerPayload.get("svix-id");
+  const svixTimestamp = headerPayload.get("svix-timestamp");
+  const svixSignature = headerPayload.get("svix-signature");
+  if (!WEBHOOK_SECRET || !svixId || !svixTimestamp || !svixSignature) {
+    console.error("Missing required headers or secret");
+    return new Response("Missing headers or secret", { status: 400 });
+  }
 
   const svixHeaders = {
     "svix-id": headerPayload.get("svix-id"),
@@ -17,7 +26,7 @@ export async function POST(req) {
 
   let evt;
   try {
-    evt = wh.verify(payload, svixHeaders); // 서명 검증
+    evt = wh.verify(body, svixHeaders); // 서명 검증
   } catch (err) {
     console.error("Webhook signature verification failed:", err);
     return new Response("Invalid signature", { status: 400 });
