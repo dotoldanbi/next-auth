@@ -26,9 +26,9 @@ export async function POST(req) {
   const eventType = evt.type;
   const eventData = evt.data;
 
-  console.log("✅ Clerk Webhook 수신됨:");
-  console.log("Event type:", eventType);
-  console.log("Event data:", eventData);
+  console.info("✅ Clerk Webhook 수신됨:");
+  console.info("Event type:", eventType);
+  console.info("Event data:", eventData);
 
   // TODO: 이벤트 타입에 따라 원하는 작업 처리
   // 예: 사용자 생성시 DB에 기록 등
