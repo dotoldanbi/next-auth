@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import { Webhook } from "svix";
-import { createOrUpdateUser } from "../lib/actions/user.js";
+import { createOrUpdateUser, deleteUser } from "../../app/lib/actions/user"; // 사용자 생성/업데이트 및 삭제 함수
 const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET; // Clerk 대시보드에서 확인
 
 export async function POST(req) {
