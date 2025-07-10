@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import { Webhook } from "svix";
-
+import { createOrUpdateUser } from "../lib/actions/user.js";
 const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET; // Clerk 대시보드에서 확인
 
 export async function POST(req) {
@@ -32,13 +32,44 @@ export async function POST(req) {
     return new Response("Invalid signature", { status: 400 });
   }
 
-  const eventType = evt.type;
-  const eventData = evt.data;
+  const { id } = evt?.data;
+  const eventType = evt?.type;
+  // const eventData = evt?.data;
 
-  console.log("✅ Clerk Webhook 수신됨:");
-  console.log("Event type:", eventType);
-  console.log("Event data:", eventData);
+  // console.log("✅ Clerk Webhook 수신됨:");
+  // console.log("Event type:", eventType);
+  // console.log("Event data:", eventData);
 
+  if (eventType === "user.created" || eventType === "user.updated") {
+    const { id, first_name, last_name, image_url, email_addresses, username } =
+      evt?.data;
+    try {
+      await createOrUpdateUser(
+        id,
+        first_name,
+        last_name,
+        image_url,
+        email_addresses,
+        username
+      );
+      return new Response("User created or updated successfully", {
+        status: 200,
+      });
+    } catch (error) {
+      console.error("Error creating or updating user:", error);
+      return new Response("Failed to create or update user", { status: 500 });
+    }
+  }
+  if (eventType === "user.deleted") {
+    const { id } = evt?.data;
+    try {
+      await deleteUser(id);
+      return new Response("User deleted successfully", { status: 200 });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      return new Response("Failed to delete user", { status: 500 });
+    }
+  }
   // TODO: 이벤트 타입에 따라 원하는 작업 처리
   // 예: 사용자 생성시 DB에 기록 등
 
